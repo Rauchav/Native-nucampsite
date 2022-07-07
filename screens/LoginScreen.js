@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { View, Button, StyleSheet } from "react-native";
-import { CheckBox, Input } from 'react-native-elements';
+import { View, StyleSheet, ScrollView } from "react-native";
+import { CheckBox, Input, Button, Icon } from 'react-native-elements';
 import * as SecureStore from 'expo-secure-store';
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 
-const LoginScreen = () => {
+const LoginTab = ({ navigation }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [remember, setRemember] = useState(false);
@@ -43,7 +44,7 @@ const LoginScreen = () => {
             <Input
                 placeholder='Username'
                 leftIcon={{ type: 'font-awesome', name: 'user-o' }}
-                onChangeText={(text) => setUsername(text)}
+                onChangeText={(username) => setUsername(username)}
                 value={username}
                 containerStyle={styles.formInput}
                 leftIconContainerStyle={styles.formIcon}
@@ -51,7 +52,7 @@ const LoginScreen = () => {
             <Input
                 placeholder='Password'
                 leftIcon={{ type: 'font-awesome', name: 'key' }}
-                onChangeText={(text) => setPassword(text)}
+                onChangeText={(password) => setPassword(password)}
                 value={password}
                 containerStyle={styles.formInput}
                 leftIconContainerStyle={styles.formIcon}
@@ -68,29 +69,207 @@ const LoginScreen = () => {
                     onPress={() => handleLogin()}
                     title='Login'
                     color='#5637DD'
+                    icon={
+                        <Icon
+                            name='sign-in'
+                            type='font-awesome'
+                            color='#fff'
+                            iconStyle={{ marginRight: 10 }}
+                        />
+                    }
+                    buttonStyle={{ backgroundColor: '#5637DD' }}
+                />
+            </View>
+            <View style={styles.formButton}>
+                <Button
+                    onPress={() => navigation.navigate('Register')}
+                    title='Register'
+                    type='clear'
+                    icon={
+                        <Icon
+                            name='user-plus'
+                            type='font-awesome'
+                            color='blue'
+                            iconStyle={{ marginRight: 10 }}
+                        />
+                    }
+                    titleStyle={{ color: 'blue' }}
                 />
             </View>
         </View>
     )
 };
 
+const RegisterTab = () => {
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
+    const [email, setEmail] = useState('');
+    const [remember, setRemember] = useState(false);
+
+    const handleRegister = () => {
+        const userInfo = {
+            username,
+            password,
+            firstName,
+            lastName,
+            email,
+            remember
+        };
+        console.log(JSON.stringify(userInfo));
+        if (remember) {
+            SecureStore.setItemAsync(
+                'userinfo',
+                JSON.stringify({
+                    username,
+                    password
+                })
+            ).catch((error) => console.log('Could not save user info', error));
+        } else {
+            SecureStore.deleteItemAsync('userinfo').catch((error) =>
+                console.log('Could not delete user info', error)
+            );
+        }
+    };
+
+    return (
+        <ScrollView>
+            <View style={styles.container}>
+                <Input
+                    placeholder='Username'
+                    leftIcon={{ type: 'font-awesome', name: 'user-o' }}
+                    onChangeText={(username) => setUsername(username)}
+                    value={username}
+                    containerStyle={styles.formInput}
+                    leftIconContainerStyle={styles.formIcon}
+                />
+                <Input
+                    placeholder='Password'
+                    leftIcon={{ type: 'font-awesome', name: 'key' }}
+                    onChangeText={(password) => setPassword(password)}
+                    value={password}
+                    containerStyle={styles.formInput}
+                    leftIconContainerStyle={styles.formIcon}
+                />
+                <Input
+                    placeholder='First Name'
+                    leftIcon={{ type: 'font-awesome', name: 'user-o' }}
+                    onChangeText={(firstName) => setFirstName(firstName)}
+                    value={firstName}
+                    containerStyle={styles.formInput}
+                    leftIconContainerStyle={styles.formIcon}
+                />
+                <Input
+                    placeholder='Last Name'
+                    leftIcon={{ type: 'font-awesome', name: 'user-o' }}
+                    onChangeText={(lastName) => setLastName(lastName)}
+                    value={lastName}
+                    containerStyle={styles.formInput}
+                    leftIconContainerStyle={styles.formIcon}
+                />
+                <Input
+                    placeholder='email'
+                    leftIcon={{ type: 'font-awesome', name: 'envelope-o' }}
+                    onChangeText={(email) => setEmail(email)}
+                    value={email}
+                    containerStyle={styles.formInput}
+                    leftIconContainerStyle={styles.formIcon}
+                />
+                <CheckBox
+                    title='Remeber Me'
+                    center
+                    checked={remember}
+                    onPress={() => setRemember(!remember)}
+                    containerStyle={styles.formCheckbox}
+                />
+                <View style={styles.formButton}>
+                    <Button
+                        onPress={() => handleRegister()}
+                        title='Register'
+                        color='#5637DD'
+                        icon={
+                            <Icon
+                                name='user-plus'
+                                type='font-awesome'
+                                color='#fff'
+                                iconStyle={{ marginRight: 10 }}
+                            />
+                        }
+                        buttonStyle={{ backgroundColor: '#5637DD' }}
+                    />
+                </View>
+            </View>
+        </ScrollView>
+    )
+}
+
+const Tab = createBottomTabNavigator();
+
+const LoginScreen = () => {
+    const tabBarOptions = {
+        activeBackgroundColor: '#5637DD',
+        inactiveBackgroundColor: '#CEC8FF',
+        activeTintColor: '#fff',
+        labelStyle: { fontSize: 16 }
+    }
+
+    return (
+        <Tab.Navigator tabBarOptions={tabBarOptions}>
+            <Tab.Screen
+                name='Login'
+                component={LoginTab}
+                options={{
+                    tabBarIcon: (props) => {
+                        return (
+                            <Icon
+                                name='sign-in'
+                                type='font-awesome'
+                                color={props.color}
+                            />
+                        )
+                    }
+                }}
+            />
+            <Tab.Screen
+                name='Register'
+                component={RegisterTab}
+                options={{
+                    tabBarIcon: (props) => {
+                        return (
+                            <Icon
+                                name='user-plus'
+                                type='font-awesome'
+                                color={props.color}
+                            />
+                        )
+                    }
+                }}
+            />
+        </Tab.Navigator>
+    )
+}
+
 const styles = StyleSheet.create({
     container: {
         justifyContent: 'center',
-        margin: 20
+        margin: 10
     },
     formIcon: {
         marginRight: 10
     },
     formInput: {
-        padding: 10
+        padding: 8,
+        height: 60
     },
     formCheckbox: {
-        margin: 10,
+        margin: 8,
         backgroundColor: null
     },
     formButton: {
-        margin: 40
+        margin: 20,
+        marginRight: 40,
+        marginLeft: 40
     }
 });
 
